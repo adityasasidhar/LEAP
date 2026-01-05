@@ -1,0 +1,27 @@
+[project]
+name = "leap-experiments"
+version = "0.1.0"
+description = "LEAP Protocol - Lightweight Edge Agent Protocol + Baseline ReAct Agent"
+requires-python = ">=3.13"
+dependencies = [
+    "crawl4ai>=0.7.8",
+    "duckduckgo-search>=7.0.0",
+    "langchain>=1.2.0",
+    "langchain-ollama>=1.0.1",
+    "langgraph>=0.2.0",
+    "ollama>=0.6.1",
+    "wikipedia>=1.4.0",
+]
+
+[project.scripts]
+# Baseline ReAct Agent (for comparison)
+react-agent = "langchain_agent.main:main"
+# LEAP Agent (the research project)
+leap = "leap_agent.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["langchain_agent", "leap_agent"]

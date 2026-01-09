@@ -7,8 +7,7 @@ The key insight: Modern LLMs already know how to use common tools
 from training data. They don't need verbose schemas in every request.
 """
 
-# Minimal tool catalogue - just name + brief description
-# This is what gets sent to the main agent (~50 tokens vs ~15,000)
+# Minimal tool catalogue - just name + brief description + maybe a hint for complex tools
 TOOL_CATALOGUE = {
     # File operations
     "read_file": "Read file contents",

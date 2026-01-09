@@ -143,12 +143,11 @@ class LEAPOrchestrator:
     def _generate_final_answer(self, query: str) -> str:
         """Generate final answer from rolling state summary."""
         prompt = f"""User query: {query}
-
-Summary of actions taken:
-{self.state_summary}
-
-Based on this summary, provide the final answer to the user request.
-If you created files or verified code, report what was done."""
+        Summary of actions taken:
+        {self.state_summary}
+        
+        Based on this summary, provide the final answer to the user request.
+        If you created files or verified code, report what was done."""
 
         return self.inference.generate(
             model=self.config.main_model,
@@ -161,43 +160,37 @@ If you created files or verified code, report what was done."""
         """Phase 1: Main agent decides NEXT tool using Rolling State."""
         catalogue = get_catalogue_prompt()
         
-        prompt = f"""You are an autonomous engineer. Your job is to SOLVE the task, not just explain it.
-
-{catalogue}
-
-User request: {query}
-
-Current Progress:
-{self.state_summary}
-
-RULES:
-1. Do NOT explain code in chat. Use tools (`fs_write`, `fs_replace`) to APPLY changes.
-2. If the user asks for time/date, you MUST use `get_current_time`.
-3. If the user asks about files, ALWAYS check with `fs_list` or `fs_read` first.
-4. Only reply with "null" if the task is FULLY COMPLETE (e.g., answer is final).
-5. Prefer using tools over guessing.
-
-Which tool should be used NEXT? Reply with JSON only:
-{{"tool": "tool_name", "params": {{"key": "value"}}, "filter": ["field1"]}}
-
-If the task is complete, return:
-{{"tool": null}}
-
-Examples:
-- List files → {{"tool": "fs_list", "params": {{"path": "directory_name"}} }}
-- Replace text → {{"tool": "fs_replace", "params": {{"path": "file.py", "old_text": "foo", "new_text": "bar"}} }}
-
-Your JSON answer:"""
+        prompt = f"""You are an autonomous AI agent whose main job is to assist users with their tasks. 
+                     You are supposed to help them with their tasks using the following tools given to you.
+        
+        Tools: {catalogue}
+        
+        User request: {query}
+        
+        Current Progress:
+        {self.state_summary}
+        
+        Which tool should be used NEXT? Reply with JSON only:
+        {{"tool": "tool_name", "params": {{"key": "value"}}, "filter": ["field1"]}}
+        
+        If the task is complete, return:
+        {{"tool": null}}
+        
+        Examples:
+        - List files → {{"tool": "fs_list", "params": {{"path": "directory_name"}} }}
+        - Replace text → {{"tool": "fs_replace", "params": {{"path": "file.py", "old_text": "foo", "new_text": "bar"}} }}
+        
+        Your JSON answer:"""
         
         response = self.inference.generate(
             model=self.config.main_model,
             prompt=prompt,
-            temperature=0.5,
-            max_tokens=300
+            temperature=0.3,
+            max_tokens=300,
         )
         
         if self.config.verbose:
-            print(f"📝 Model response: {response[:150]}...")
+            print(f"Model response: {response}...")
         
         return self._parse_tool_request(response)
 
@@ -205,20 +198,20 @@ Your JSON answer:"""
         """Phase 3: Update the rolling state summary."""
         prompt = f"""Update the progress summary for this task.
         
-User Request: {query}
-
-Old Summary:
-{self.state_summary}
-
-New Action: Used {tool_request.get("tool")}
-Result: {tool_result[:1000]}
-
-Write a concise, updated summary of what has been done so far. 
-Do not lose important details from the Old Summary.
-Merge the New Action into the summary.
-Keep it under 300 words.
-
-Updated Summary:"""
+        User Request: {query}
+        
+        Old Summary:
+        {self.state_summary}
+        
+        New Action: Used {tool_request.get("tool")}
+        Result: {tool_result[:1000]}
+        
+        Write a concise, updated summary of what has been done so far. 
+        Do not lose important details from the Old Summary.
+        Merge the New Action into the summary.
+        Keep it under 300 words.
+        
+        Updated Summary:"""
 
         response = self.inference.generate(
             model=self.config.main_model,
@@ -277,7 +270,6 @@ Updated Summary:"""
     
     def _phase2_execution(self, tool_request: dict) -> str:
         """Phase 2: Execute tool and filter response.
-        
         The subagent:
         1. Executes the actual tool
         2. Filters response to only requested fields
@@ -290,7 +282,7 @@ Updated Summary:"""
         self.metrics.tool_name = tool_name
         
         if self.config.verbose:
-            print(f"🔧 Executing: {tool_name}")
+            print(f"Executing: {tool_name}")
             if params:
                 print(f"   Params: {json.dumps(params, indent=2)}")
 

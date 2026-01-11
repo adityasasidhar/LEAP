@@ -45,8 +45,6 @@ class LEAPOrchestrator:
         self.inference = OllamaInference(self.config)
         self.metrics = OrchestrationMetrics()
         self.history: list = []
-        
-        # Import tools
         self.tools = self._load_tools()
         
         if self.config.warmup_models:
@@ -76,9 +74,18 @@ class LEAPOrchestrator:
             "read_definition": code_tools.read_definition,
             "replace_definition": code_tools.replace_definition,
             "calculate": utility_tools.calculate,
-            "get_current_time": utility_tools.get_datetime,
+            "current_time": utility_tools.get_datetime,  # Updated to match catalogue
+            "get_current_time": utility_tools.get_datetime, # Keep for backward compatibility
             "parse_json": utility_tools.json_parse,
         }
+    
+    def _print_thinking(self, response: str, label: str = "Thinking"):
+        """Extract and print thinking blocks."""
+        thinking = re.findall(r'<think>(.*?)</think>', response, flags=re.DOTALL)
+        if thinking and self.config.verbose:
+            print(f"\n🧠 {label}:")
+            for thought in thinking:
+                print(f"{thought.strip()}\n")
     
     def run(self, query: str, max_turns: int = 15) -> str:
         """Process a user query through the LEAP pipeline (Rolling O(1) State)."""
@@ -170,17 +177,22 @@ class LEAPOrchestrator:
         Current Progress:
         {self.state_summary}
         
-        Which tool should be used NEXT? Reply with JSON only:
-        {{"tool": "tool_name", "params": {{"key": "value"}}, "filter": ["field1"]}}
+        Which tool should be used NEXT? 
+        1. CRITICAL: You MUST think about the request first inside <think> tags.
+        2. Then reply with the JSON tool request.
         
-        If the task is complete, return:
-        {{"tool": null}}
+        Which tool should be used NEXT? 
         
-        Examples:
-        - List files → {{"tool": "fs_list", "params": {{"path": "directory_name"}} }}
-        - Replace text → {{"tool": "fs_replace", "params": {{"path": "file.py", "old_text": "foo", "new_text": "bar"}} }}
+        Optional: You can explain your reasoning in <think> tags before the JSON.
+        Required: You MUST reply with the JSON tool request.
         
-        Your JSON answer:"""
+        Example:
+        <think>
+        I need to list files to see what's here.
+        </think>
+        {{"tool": "fs_list", "params": {{"path": "."}} }}
+        
+        Your answer:"""
         
         response = self.inference.generate(
             model=self.config.main_model,
@@ -190,6 +202,7 @@ class LEAPOrchestrator:
         )
         
         if self.config.verbose:
+            self._print_thinking(response, "Phase 1 Planning")
             print(f"Model response: {response}...")
         
         return self._parse_tool_request(response)
@@ -221,6 +234,11 @@ class LEAPOrchestrator:
         )
         # Clean thinking tags
         self.state_summary = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
+        
+        if self.config.verbose:
+            self._print_thinking(response, "Phase 3 Reasoning")
+            print(f"   Phase 3: Updated State Summary")
+            print(f"   Model response: {self.state_summary[:200]}...")
     
     def _parse_tool_request(self, response: str) -> Optional[dict]:
         """Extract JSON tool request from model response."""
@@ -238,6 +256,8 @@ class LEAPOrchestrator:
                     return None
                 return parsed
         except json.JSONDecodeError:
+            if self.config.verbose:
+                print(f"⚠️ JSON Parse Failed. content: {response[:100]}...")
             pass
         
         # Find JSON with balanced braces
@@ -352,6 +372,9 @@ Return ONLY a compact JSON with the requested fields. No explanation."""
             max_tokens=512
         )
         
+        if self.config.verbose:
+            print(f" Sub-Agent Filter Response: {response}")
+        
         # Parse filtered result
         try:
             # Remove thinking tags
@@ -394,13 +417,12 @@ Provide a clear, helpful answer based on this data."""
         """Handle queries that don't need tools (including code writing)."""
         # Better prompt for coding and general queries
         prompt = f"""You are a helpful AI assistant. Respond to the user's request directly.
+                    User request: {query}
 
-User request: {query}
+                    If the request is for code, provide complete working code with explanations.
+                    If the request is a question, provide a clear and helpful answer.
 
-If the request is for code, provide complete working code with explanations.
-If the request is a question, provide a clear and helpful answer.
-
-Your response:"""
+                    Your response:"""
         
         response = self.inference.generate(
             model=self.config.main_model,
@@ -415,7 +437,7 @@ Your response:"""
         # Fallback if response is empty
         if not response or len(response) < 10:
             if self.config.verbose:
-                print("⚠️ Empty response, retrying with higher temperature...")
+                print("Empty response, retrying with higher temperature...")
             response = self.inference.generate(
                 model=self.config.main_model,
                 prompt=prompt,
@@ -428,7 +450,7 @@ Your response:"""
     
     def _print_metrics(self):
         """Print orchestration metrics."""
-        print(f"\n📊 LEAP Metrics:")
+        print(f"\nLEAP Metrics:")
         print(f"   Phase 1 (Planning):  {self.metrics.phase1_time:.1f}s")
         print(f"   Phase 2 (Execution): {self.metrics.phase2_time:.1f}s")
         print(f"   Phase 3 (Response):  {self.metrics.phase3_time:.1f}s")

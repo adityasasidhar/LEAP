@@ -7,7 +7,6 @@ import ollama
 import time
 from typing import Optional, Generator
 from dataclasses import dataclass
-
 from .config import LEAPConfig
 
 
@@ -32,12 +31,11 @@ class OllamaInference:
         self,
         model: str,
         prompt: str,
-        temperature: float = 0.3,
+        temperature: float = 0.7,
         max_tokens: int = 1024,
         stream: bool = False
     ) -> str | Generator[str, None, None]:
         """Generate response from a model.
-        
         In sequential mode, this will unload previous model before loading new one.
         """
         start = time.time()
@@ -45,7 +43,7 @@ class OllamaInference:
         # Track if model changed
         model_changed = model != self.current_model
         if model_changed and self.config.verbose:
-            print(f"🔄 Loading model: {model}")
+            print(f" Loading model: {model}")
         
         try:
             if stream:
@@ -109,7 +107,7 @@ class OllamaInference:
         if not self.config.warmup_models:
             return
             
-        print("🔥 Warming up models...")
+        print(" Warming up models...")
         
         # Quick generation to load models
         start = time.time()
@@ -128,7 +126,7 @@ class OllamaInference:
         )
         sub_time = time.time() - start
         
-        print(f"✅ Models ready: {self.config.main_model}({main_time:.1f}s), "
+        print(f" Models ready: {self.config.main_model}({main_time:.1f}s), "
               f"{self.config.sub_model}({sub_time:.1f}s)")
     
     def get_metrics(self) -> dict:
@@ -139,7 +137,6 @@ class OllamaInference:
             "tokens": self.metrics.tokens_generated,
             "tok/s": round(self.metrics.tokens_per_second, 1),
         }
-
 
 def test_ollama_connection() -> bool:
     """Test if Ollama is running."""

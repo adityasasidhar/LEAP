@@ -28,9 +28,9 @@ def main():
         help="Use predefined model pair (4gb, 4gb_fast, 4gb_light, 8gb)"
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--quiet", "-q",
         action="store_true",
-        help="Enable verbose output with metrics"
+        help="Disable verbose output"
     )
     parser.add_argument(
         "--no-warmup",
@@ -61,7 +61,7 @@ def main():
     config = LEAPConfig(
         main_model=main_model,
         sub_model=sub_model,
-        verbose=args.verbose,
+        verbose=not args.quiet,
         warmup_models=not args.no_warmup,
     )
     

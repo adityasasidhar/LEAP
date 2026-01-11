@@ -34,10 +34,8 @@ TOOL_CATALOGUE = {
     "find_definition": "Find definition of symbol",
     "read_definition": "Read source of function/class",
     "replace_definition": "Replace source of function/class",
-    
-    # Utility operations
     "calculate": "Evaluate math expression",
-    "get_current_time": "Get current date/time",
+    "current_time": "Get current date and time",
     "parse_json": "Parse/format JSON",
 }
 
@@ -165,12 +163,3 @@ TOOL_SPECS = {
         "filterable_fields": ["parsed", "valid"],
     },
 }
-
-
-if __name__ == "__main__":
-    print("LEAP Tool Catalogue")
-    print("=" * 50)
-    print(get_catalogue_prompt())
-    print(f"\nEstimated tokens: ~{get_catalogue_tokens()}")
-    print(f"Traditional MCP would be: ~15,000+ tokens")
-    print(f"Token reduction: ~{15000 // get_catalogue_tokens()}x")

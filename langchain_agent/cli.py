@@ -90,7 +90,7 @@ def run_cli(config: Optional[AgentConfig] = None):
                 args = user_input.split()[1:] if len(user_input.split()) > 1 else []
                 
                 if cmd in ["/quit", "/exit"]:
-                    print_colored("\nGoodbye! 👋", Colors.CYAN)
+                    print_colored("\nGoodbye! [EXIT]", Colors.CYAN)
                     break
                 elif cmd == "/help":
                     print_help()
@@ -111,7 +111,7 @@ def run_cli(config: Optional[AgentConfig] = None):
                 elif cmd == "/tools":
                     print_colored("\nTools:", Colors.YELLOW)
                     for t in sorted(agent.get_available_tools()):
-                        print(f"  • {t}")
+                        print(f"  - {t}")
                 else:
                     print_colored(f"Unknown: {cmd}", Colors.RED)
                 continue
@@ -134,7 +134,7 @@ def run_cli(config: Optional[AgentConfig] = None):
         except KeyboardInterrupt:
             print_colored("\n\nUse /quit to exit.", Colors.DIM)
         except EOFError:
-            print_colored("\nGoodbye! 👋", Colors.CYAN)
+            print_colored("\nGoodbye! [EXIT]", Colors.CYAN)
             break
     
     try:

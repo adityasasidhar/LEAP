@@ -38,7 +38,7 @@ def analyze_code(path: str) -> str:
         if imports:
             analysis.append("**Imports:**")
             for imp in imports[:20]:
-                analysis.append(f"  • {imp}")
+                analysis.append(f"  - {imp}")
             if len(imports) > 20:
                 analysis.append(f"  ... and {len(imports) - 20} more")
             analysis.append("")
@@ -53,7 +53,7 @@ def analyze_code(path: str) -> str:
         if classes:
             analysis.append("**Classes:**")
             for name, methods, line in classes:
-                analysis.append(f"  • {name} (line {line})")
+                analysis.append(f"  - {name} (line {line})")
                 for method in methods[:5]:
                     analysis.append(f"      - {method}()")
                 if len(methods) > 5:
@@ -71,7 +71,7 @@ def analyze_code(path: str) -> str:
             analysis.append("**Functions:**")
             for name, args, line in functions:
                 args_str = ", ".join(args) if args else ""
-                analysis.append(f"  • {name}({args_str}) - line {line}")
+                analysis.append(f"  - {name}({args_str}) - line {line}")
             analysis.append("")
         
         lines = content.count('\n') + 1

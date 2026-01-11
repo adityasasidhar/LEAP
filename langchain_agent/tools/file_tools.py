@@ -59,10 +59,10 @@ def list_directory(path: str = ".") -> str:
         for entry in sorted(os.listdir(path)):
             full_path = os.path.join(path, entry)
             if os.path.isdir(full_path):
-                entries.append(f"📁 {entry}/")
+                entries.append(f"[DIR] {entry}/")
             else:
                 size = os.path.getsize(full_path)
-                entries.append(f"📄 {entry} ({_format_size(size)})")
+                entries.append(f"[FILE] {entry} ({_format_size(size)})")
         
         if not entries:
             return f"Directory '{path}' is empty"
@@ -93,7 +93,7 @@ def search_files(pattern: str, directory: str = ".") -> str:
         
         results = [f"Found {len(matches)} file(s) matching '{pattern}':"]
         for match in sorted(matches)[:50]:
-            results.append(f"  • {match}")
+            results.append(f"  - {match}")
         
         if len(matches) > 50:
             results.append(f"  ... and {len(matches) - 50} more")

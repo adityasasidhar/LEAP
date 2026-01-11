@@ -92,7 +92,7 @@ class ReactAgent:
                 for msg in messages:
                     if hasattr(msg, 'content'):
                         content = str(msg.content)
-                        yield f"\n\n🔧 Tool result:\n```\n{content[:500]}{'...' if len(content) > 500 else ''}\n```\n\n"
+                        yield f"\n\n[TOOL] Tool result:\n```\n{content[:500]}{'...' if len(content) > 500 else ''}\n```\n\n"
                         last_content = ""
         
         self.history = final_messages

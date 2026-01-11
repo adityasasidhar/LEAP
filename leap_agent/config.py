@@ -31,7 +31,7 @@ class LEAPConfig:
     max_raw_response: int = 5000      # Max raw tool output before filtering
     
     # Monitoring
-    verbose: bool = False
+    verbose: bool = True
     track_memory: bool = True
     track_latency: bool = True
 

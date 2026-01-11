@@ -31,7 +31,7 @@ class AgentConfig:
     
     # Output settings
     streaming: bool = True
-    verbose: bool = False
+    verbose: bool = True
 
 
 # Available Ollama models

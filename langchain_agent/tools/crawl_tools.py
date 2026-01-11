@@ -103,14 +103,14 @@ def extract_links(url: str) -> str:
                 for link in internal:
                     href = link.get('href', 'N/A')
                     text = link.get('text', '')[:50]
-                    output.append(f"  • {text or 'No text'}: {href}")
+                    output.append(f"  - {text or 'No text'}: {href}")
             
             if external:
                 output.append("\n**External Links:**")
                 for link in external:
                     href = link.get('href', 'N/A')
                     text = link.get('text', '')[:50]
-                    output.append(f"  • {text or 'No text'}: {href}")
+                    output.append(f"  - {text or 'No text'}: {href}")
             
             return "\n".join(output)
     

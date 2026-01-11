@@ -65,19 +65,19 @@ def run_cli(config: Optional[LEAPConfig] = None):
     
     # Check Ollama connection
     if not test_ollama_connection():
-        print_colored("❌ Ollama not running! Start with: ollama serve", Colors.RED)
+        print_colored("[ERROR] Ollama not running! Start with: ollama serve", Colors.RED)
         return 1
     
     print_colored(f"  Main: {config.main_model} | Sub: {config.sub_model}", Colors.DIM)
     print_colored("  Type /help for commands, /quit to exit\n", Colors.DIM)
     
     # Initialize agent
-    print_colored("🔧 Initializing LEAP agent...", Colors.YELLOW)
+    print_colored("[INIT] Initializing LEAP agent...", Colors.YELLOW)
     try:
         agent = LEAPOrchestrator(config)
-        print_colored(f"✅ Ready! {len(agent.get_available_tools())} tools loaded\n", Colors.GREEN)
+        print_colored(f"[OK] Ready! {len(agent.get_available_tools())} tools loaded\n", Colors.GREEN)
     except Exception as e:
-        print_colored(f"❌ Failed to initialize: {e}", Colors.RED)
+        print_colored(f"[ERROR] Failed to initialize: {e}", Colors.RED)
         return 1
     
     # Command history
@@ -99,27 +99,27 @@ def run_cli(config: Optional[LEAPConfig] = None):
                 cmd = user_input.lower().split()[0]
                 
                 if cmd in ["/quit", "/exit", "/q"]:
-                    print_colored("\n👋 Goodbye!", Colors.CYAN)
+                    print_colored("\n[EXIT] Goodbye!", Colors.CYAN)
                     break
                 elif cmd == "/help":
                     print_help()
                 elif cmd == "/metrics":
                     metrics = agent.get_metrics()
-                    print_colored("\n📊 Last Task Metrics:", Colors.YELLOW)
+                    print_colored("\n[METRICS] Last Task Metrics:", Colors.YELLOW)
                     for k, v in metrics.items():
                         print(f"   {k}: {v}")
                     print()
                 elif cmd == "/tools":
                     tools = agent.get_available_tools()
-                    print_colored(f"\n🔧 Tools ({len(tools)}):", Colors.YELLOW)
+                    print_colored(f"\n[TOOLS] Tools ({len(tools)}):", Colors.YELLOW)
                     for t in sorted(tools):
-                        print(f"   • {t}")
+                        print(f"   - {t}")
                     print()
                 elif cmd == "/models":
-                    print_colored("\n🤖 Current Model Pair:", Colors.YELLOW)
+                    print_colored("\n[MODELS] Current Model Pair:", Colors.YELLOW)
                     print(f"   Main: {config.main_model}")
                     print(f"   Sub:  {config.sub_model}")
-                    print_colored("\n📋 Available Pairs:", Colors.YELLOW)
+                    print_colored("\n[LIST] Available Pairs:", Colors.YELLOW)
                     for name, pair in MODEL_PAIRS.items():
                         print(f"   {name}: {pair['main']} + {pair['sub']}")
                         print(f"      {pair['description']}")
@@ -148,7 +148,7 @@ def run_cli(config: Optional[LEAPConfig] = None):
                 if config.track_latency:
                     metrics = agent.get_metrics()
                     print_colored(
-                        f"\n⏱  {metrics['total_time']:.1f}s | "
+                        f"\n[TIME] {metrics['total_time']:.1f}s | "
                         f"Tool: {metrics['tool'] or 'none'} | "
                         f"Reduction: {metrics['token_reduction']}",
                         Colors.DIM
@@ -161,7 +161,7 @@ def run_cli(config: Optional[LEAPConfig] = None):
         except KeyboardInterrupt:
             print_colored("\n\nUse /quit to exit.", Colors.DIM)
         except EOFError:
-            print_colored("\n👋 Goodbye!", Colors.CYAN)
+            print_colored("\n[EXIT] Goodbye!", Colors.CYAN)
             break
     
     # Save history

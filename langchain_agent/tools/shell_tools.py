@@ -52,7 +52,7 @@ def run_command(command: str, timeout: int = 30) -> str:
         
         output = "\n".join(output_parts) if output_parts else "(no output)"
         
-        status = "✓ Success" if result.returncode == 0 else f"✗ Failed (exit code: {result.returncode})"
+        status = "[OK] Success" if result.returncode == 0 else f"[FAIL] Failed (exit code: {result.returncode})"
         
         return f"Command: `{command}`\nStatus: {status}\n\n{output}"
         
